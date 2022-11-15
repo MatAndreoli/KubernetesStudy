@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pokemon-back-configmap
+  namespace: pokemon
+data:
+  api-url: pokemon-back-service

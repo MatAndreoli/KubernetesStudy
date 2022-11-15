@@ -1,0 +1,37 @@
+app:
+  pokemonFront: pokemon-front
+  pokemonBack: pokemon-back
+  replicas: 1
+  revisionHistoryLimit: 0
+  limits:
+    cpu: 400m
+    memory: 512Mi
+  request:
+    cpu: 100m
+    memory: 256Mi
+
+pokemonBack:
+  image: 
+    image: matandreoli/pokemon-api
+    tag: ""
+    port: 8080
+  service:
+    exposePort: 8080
+    type:
+      enabled: no
+
+pokemonFront:
+  image: 
+    image: matandreoli/pokemon-front
+    tag: ""
+    port: 3000
+  service:
+    exposePort: 3000
+    type:
+      enabled: yes
+      value: NodePort
+      nodePort: 30002
+  envs:
+    nodeEnv: prod
+  cm:
+    key: pokemonApiService

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.mongodbName }}-depl
+  labels: 
+    app: {{ .Values.app.mongodbName }}
+spec:
+  replicas: {{ .Values.app.replicas }}
+  revisionHistoryLimit: {{ .Values.app.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app: {{ .Values.app.mongodbName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app.mongodbName }}
+    spec:
+      containers:
+      - name: {{ .Values.app.mongodbName }}
+        image: {{ .Values.mongodb.image.image }}:{{ .Values.mongodb.image.tag }}
+        resources:
+          limits:
+            memory: "{{ .Values.app.limits.memory }}"
+            cpu: "{{ .Values.app.limits.cpu }}"
+        ports:
+        - containerPort: {{ .Values.mongodb.image.port }}
+        env:
+          - name: TST
+            value: {{ .Values.test.value }}
+          - name: MONGO_INITDB_ROOT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-secret
+                key: mongo-root-username
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-secret
+                key: mongo-root-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.app.mongodbName }}-service
+spec:
+  selector:
+    app: {{ .Values.app.mongodbName }}
+  ports:
+  - port: {{ .Values.mongodb.service.exposePort }}
+    targetPort: {{ .Values.mongodb.image.port }} # looks to containerPort of the deployment

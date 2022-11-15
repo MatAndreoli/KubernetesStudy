@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  {{- $appName := printf "%s" .Values.app.pokemonBack | trunc 63 | trimSuffix "-" }}
+  name: {{ $appName }}-deploy
+  labels:
+    app: {{ $appName }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $appName }}
+  replicas: {{ default 1 .Values.app.replicas | int }}
+  revisionHistoryLimit: {{ .Values.app.revisionHistoryLimit }}
+  template:
+    metadata:
+      labels:
+        app: {{ $appName }}
+    spec:
+      containers:
+      - name: {{ $appName }}
+        image: {{ .Values.pokemonBack.image.image }}{{ printf "%s" .Values.pokemonBack.image.tag }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: {{ .Values.pokemonBack.image.port }}
+        resources:
+          limits:
+            cpu: "{{ default "100m" .Values.app.limits.cpu }}"
+            memory: "{{ default "128Mi" .Values.app.limits.memory }}"
+          requests:
+            cpu: "{{ default "100m" .Values.app.request.cpu }}"
+            memory: "{{ default "128Mi" .Values.app.request.memory }}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $appName }}-svc
+  labels:
+    app: {{ $appName }}
+spec:
+  selector:
+    app: {{ $appName }}
+  ports:
+  - port: {{ .Values.pokemonBack.service.exposePort }}
+    targetPort: {{ .Values.pokemonBack.image.port }}

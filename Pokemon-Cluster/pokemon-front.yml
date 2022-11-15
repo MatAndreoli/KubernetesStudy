@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pokemon-front-depl
+  namespace: pokemon
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pokemon-front
+  template:
+    metadata:
+      labels:
+        app: pokemon-front
+    spec:
+      containers:
+      - name: pokemon-front
+        image: matandreoli/pokemon-front:1.3
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 3000
+        env:
+          - name: NODE_ENV
+            value: 'prod'
+          - name: API_SERVICE
+            valueFrom:
+              configMapKeyRef:
+                name: pokemon-back-configmap
+                key: api-url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pokemon-front-service
+  namespace: pokemon
+spec:
+  selector:
+    app: pokemon-front
+  type: LoadBalancer
+  ports:
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30001

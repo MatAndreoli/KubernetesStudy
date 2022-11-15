@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  {{- $appName := printf "%s" .Values.app.pokemonFront | trunc 63 | trimSuffix "-" }}
+  name: {{ $appName }}-deploy
+  labels:
+    app: {{ $appName }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $appName }}
+  replicas: {{ default 1 .Values.app.replicas | int }}
+  revisionHistoryLimit: {{ .Values.app.revisionHistoryLimit }}
+  template:
+    metadata:
+      labels:
+        app: {{ $appName }}
+    spec:
+      containers:
+      - name: {{ $appName }}
+        image: {{ .Values.pokemonFront.image.image }}{{ printf "%s" .Values.pokemonFront.image.tag }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: {{ .Values.pokemonFront.image.port }}
+        resources:
+          limits:
+            cpu: "{{ default "100m" .Values.app.limits.cpu }}"
+            memory: "{{ default "128Mi" .Values.app.limits.memory }}"
+          requests:
+            cpu: "{{ default "100m" .Values.app.request.cpu }}"
+            memory: "{{ default "128Mi" .Values.app.request.memory }}"
+        env:
+        - name: NODE_ENV
+          value: "{{ .Values.pokemonFront.envs.nodeEnv }}"
+        - name: API_SERVICE
+          valueFrom:
+            configMapKeyRef:
+              name: {{ $appName }}-cm
+              key: {{ .Values.pokemonFront.cm.key }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $appName }}-svc
+  labels:
+    app: {{ $appName }}
+spec:
+  selector:
+    app: {{ $appName }}
+  {{- if .Values.pokemonFront.service.type.enabled }}
+  type: {{ .Values.pokemonFront.service.type.value }}
+  {{- end }}
+  ports:
+  - port: {{ .Values.pokemonFront.service.exposePort }}
+    targetPort: {{ .Values.pokemonFront.image.port }}
+    {{- if .Values.pokemonFront.service.type.enabled }}
+    nodePort: {{ .Values.pokemonFront.service.type.nodePort }}
+    {{- end }}

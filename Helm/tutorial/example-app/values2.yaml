@@ -1,0 +1,33 @@
+app:
+  mongodbName: mongodb
+  mongoExpressName: mongo-express
+  replicas: 1
+  revisionHistoryLimit: 0
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+mongoExpress:
+  image: 
+    image: mongo-express
+    port: 8081
+  service:
+    exposePort: 8081
+    type:
+      enabled: false
+
+
+
+mongodb:
+  image:
+    image: mongo
+    tag: "4.4.6"
+    port: 27017
+  service:
+   exposePort: 27017
+test:
+  value: "some text"
+
+mondoSecret:
+  mongoRootUsername: bWF0aGV1cw==
+  mongoRootPassword: cGFzc3dvcmQ=

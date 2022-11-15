@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pokemon-back-depl
+  namespace: pokemon
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pokemon-back
+  template:
+    metadata:
+      labels:
+        app: pokemon-back
+    spec:
+      containers:
+      - name: pokemon-back
+        image: matandreoli/pokemon-api:1.0
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pokemon-back-service
+  namespace: pokemon
+spec:
+  selector:
+    app: pokemon-back
+  ports:
+  - port: 8080
+    targetPort: 8080
