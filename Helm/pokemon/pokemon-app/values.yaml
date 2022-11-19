@@ -19,6 +19,8 @@ pokemonBack:
     exposePort: 8080
     type:
       enabled: no
+  cm:
+    key: pokemonApiUrl
 
 pokemonFront:
   image: 
